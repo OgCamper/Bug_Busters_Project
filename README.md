@@ -1,10 +1,10 @@
 # Bug_Busters_Project
 
 ### Contributors
-- OgCamper
-- Systemized
-- JohnnyTranWorks
-- Tytusclements-cpu
+- [OgCamper](https://github.com/OgCamper)
+- [Systemized](https://github.com/Systemized)
+- [JohnnyTranWorks](https://github.com/JohnnyTranWorks)
+- [Tytusclements-cpu](https://github.com/Tytusclements-cpu)
 
 Project Description
 ---
