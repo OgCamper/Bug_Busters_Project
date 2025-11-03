@@ -1,4 +1,4 @@
-CREATE TABLE User (
+CREATE TABLE IF NOT EXISTS User (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -6,7 +6,7 @@ CREATE TABLE User (
     role VARCHAR(50)
 );
 
-CREATE TABLE Deck (
+CREATE TABLE IF NOT EXISTS Deck (
     deck_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     title VARCHAR(150),
@@ -15,12 +15,12 @@ CREATE TABLE Deck (
     FOREIGN KEY (user_id) REFERENCES User(user_id)
 );
 
-CREATE TABLE Tag (
+CREATE TABLE IF NOT EXISTS Tag (
     tag_id INT AUTO_INCREMENT PRIMARY KEY,
     tag_name VARCHAR(50) NOT NULL
 );
 
-CREATE TABLE DeckTag (
+CREATE TABLE IF NOT EXISTS DeckTag (
     deck_id INT,
     tag_id INT,
     PRIMARY KEY (deck_id, tag_id),
@@ -28,7 +28,7 @@ CREATE TABLE DeckTag (
     FOREIGN KEY (tag_id) REFERENCES Tag(tag_id) ON DELETE CASCADE
 );
 
-CREATE TABLE Flashcard (
+CREATE TABLE IF NOT EXISTS Flashcard (
     card_id INT AUTO_INCREMENT PRIMARY KEY,
     deck_id INT NOT NULL,
     front_text TEXT NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE Flashcard (
     FOREIGN KEY (deck_id) REFERENCES Deck(deck_id) ON DELETE CASCADE
 );
 
-CREATE TABLE Review (
+CREATE TABLE IF NOT EXISTS Review (
     review_id INT AUTO_INCREMENT PRIMARY KEY,
     card_id INT NOT NULL,
     user_id INT NOT NULL,
@@ -48,7 +48,7 @@ CREATE TABLE Review (
     FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
 );
 
-CREATE TABLE Collaboration (
+CREATE TABLE IF NOT EXISTS Collaboration (
     collab_id INT AUTO_INCREMENT PRIMARY KEY,
     deck_id INT NOT NULL,
     user_id INT NOT NULL,
@@ -57,14 +57,14 @@ CREATE TABLE Collaboration (
     FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
 );
 
-CREATE TABLE Quiz (
+CREATE TABLE IF NOT EXISTS Quiz (
     quiz_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES User(user_id)
 );
 
-CREATE TABLE QuizAttempt (
+CREATE TABLE IF NOT EXISTS QuizAttempt (
     attempt_id INT AUTO_INCREMENT PRIMARY KEY,
     quiz_id INT NOT NULL,
     user_id INT NOT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE QuizAttempt (
     FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
 );
 
-CREATE TABLE Analytics (
+CREATE TABLE IF NOT EXISTS Analytics (
     analytics_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     accuracy_rate DECIMAL(5,2),
