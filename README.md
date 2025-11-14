@@ -29,3 +29,25 @@ Main Components of the System
 **Security**: Uses JWT tokens for login sessions and bcrypt for password protection.
 
 **Deployment**: Runs in Docker and can be hosted on platforms like Heroku or Render.
+
+Setup
+---
+
+#### Prerequsite
+- [Docker](https://www.docker.com/)
+
+#### Run
+1. Clone project
+    ```sh
+    git clone https://github.com/OgCamper/Bug_Busters_Project.git
+    ```
+
+2. Cd to project
+    ```sh
+    cd Bug_Busters_Project
+    ```
+
+2. Run docker compose
+    ```sh
+    docker-compose up -d
+    ```
