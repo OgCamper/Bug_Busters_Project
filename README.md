@@ -51,3 +51,5 @@ Setup
     ```sh
     docker-compose up -d
     ```
+
+4. View at localhost:5173
