@@ -34,7 +34,7 @@ Setup
 ---
 
 #### Prerequsite
-- [Docker](https://www.docker.com/)
+- Have [Docker](https://www.docker.com/) Downloaded
 
 #### Run
 1. Clone project
@@ -47,9 +47,14 @@ Setup
     cd Bug_Busters_Project
     ```
 
-2. Run docker compose
+3. Copy server/.env.example
+    ```sh
+    cp server/.env.example server/.env
+    ```
+
+4. Run docker compose
     ```sh
     docker-compose up -d
     ```
 
-4. View at localhost:5173
+5. View at (localhost:5173)[http://localhost:5173]
