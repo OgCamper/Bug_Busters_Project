@@ -1,19 +1,20 @@
 import express from 'express';
-import authRouter from './routes/auth';
 import cors from 'cors';
+import authRouter from './routes/auth.js';
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
+// API base
+app.use('/api/auth', authRouter);
 
-app.use('/auth', authRouter);
-
-app.get('/', (req, res) => {
-  res.send('Welcome to Express Server!');
-})
+// health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
 
 app.listen(3000, () => {
-  console.log('Server is running on port 3000');
-})
+  console.log('🔥 Server running on http://localhost:3000');
+});
