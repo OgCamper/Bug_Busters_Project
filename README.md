@@ -47,14 +47,14 @@ Setup
     cd Bug_Busters_Project
     ```
 
-3. Copy server/.env.example
+3. Copy .env.example
     ```sh
-    cp server/.env.example server/.env
+    cp .env.example .env
     ```
 
 4. Run docker compose
     ```sh
-    docker-compose up -d
+    docker compose up -d
     ```
 
-5. View at (localhost:5173)[http://localhost:5173]
+5. View at [localhost:5173](http://localhost:5173)
