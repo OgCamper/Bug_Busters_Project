@@ -4,6 +4,8 @@ import ProtectedRoute from './components/ProtectedRoutes';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignUpPage';
 import HomePage from './pages/HomePage';
+import DeckPage from './pages/DeckPage';
+import DeckQuizPage from './pages/DeckQuizPage';
 import "./App.css";
 
 function App() {
@@ -18,6 +20,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <HomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/decks/:deckId"
+            element={
+              <ProtectedRoute>
+                <DeckPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/decks/:deckId/quiz"
+            element={
+              <ProtectedRoute>
+                <DeckQuizPage />
               </ProtectedRoute>
             }
           />
