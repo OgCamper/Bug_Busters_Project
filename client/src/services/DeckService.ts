@@ -124,5 +124,12 @@ export const deckService = {
     async deleteCard(cardId: number): Promise<void> {
         await authorizedFetch(`${API_URL}/cards/${cardId}`, { method: 'DELETE' });
     },
+
+    async shareDeck(deckId: number, email: string, role: string): Promise<any> {
+        return await authorizedFetch(`${API_URL}/decks/${deckId}/share`, {
+            method: 'POST',
+            body: JSON.stringify({ email, role }),
+        });
+    },
 };
 

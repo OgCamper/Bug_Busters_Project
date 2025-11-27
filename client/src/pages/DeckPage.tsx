@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { deckService, type Card, type DeckSummary } from '../services/DeckService';
 import { useAuth } from '../contexts/AuthContext';
+import ShareDeck from "../components/ShareDeck";
 
 interface CardFormState {
     front_text: string;
@@ -28,6 +29,8 @@ export default function DeckPage() {
     const [editingCardId, setEditingCardId] = useState<number | null>(null);
     const [cardEditForm, setCardEditForm] = useState<CardFormState>({ front_text: '', back_text: '' });
     const [cardSavingId, setCardSavingId] = useState<number | null>(null);
+
+    const [showShareModal, setShowShareModal] = useState(false);
 
     const loadDeck = useCallback(async () => {
         if (!Number.isInteger(numericDeckId)) {
@@ -180,6 +183,12 @@ export default function DeckPage() {
                             ← Back to decks
                         </button>
                         <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowShareModal(true)}
+                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-500"
+                            >
+                                Share Deck
+                            </button>
                             <button
                                 onClick={handleLogout}
                                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
@@ -400,6 +409,10 @@ export default function DeckPage() {
                     )}
                 </section>
             </main>
+            {showShareModal && deck && (
+                <ShareDeck deckId={deck.id} onClose={() => setShowShareModal(false)} />
+            )}
+
         </div>
     );
 }
