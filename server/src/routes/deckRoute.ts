@@ -226,4 +226,36 @@ router.delete('/:deckId', authenticate, async (req: AuthenticatedRequest, res) =
     }
 });
 
+// Share a deck with another user
+router.post("/:deckId/share", async (req, res) => {
+  const { deckId } = req.params;
+  const { email, role } = req.body;
+
+  try {
+    // returns [rows, fields]
+    const [rows] = await db.query(
+      "SELECT user_id FROM users WHERE email = ?",
+      [email]
+    );
+
+    if ((rows as any[]).length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const sharedUserId = (rows as any[])[0].user_id;
+
+    // Insert collaboration row
+    await db.query(
+      `INSERT INTO collaboration (deck_id, user_id, role)
+       VALUES (?, ?, ?)`,
+      [deckId, sharedUserId, role]
+    );
+
+    return res.json({ message: "Deck shared successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Error sharing deck" });
+  }
+});
+
 export default router;
