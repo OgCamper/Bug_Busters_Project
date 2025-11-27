@@ -8,6 +8,8 @@ export interface DeckSummary {
     description: string | null;
     created_at?: string;
     card_count?: number;
+    source?: "owner" | "shared";
+    role?: "owner" | "editor" | "viewer";
 }
 
 export interface Card {
@@ -58,6 +60,8 @@ function mapDeck(raw: any, cardCount?: number): DeckSummary {
         description: raw.description ?? null,
         created_at: typeof raw.created_at === 'string' ? raw.created_at : raw.created_at?.toString(),
         card_count: cardCount ?? raw.card_count,
+        source: raw.source,
+        role: raw.role,
     };
 }
 
@@ -131,5 +135,12 @@ export const deckService = {
             body: JSON.stringify({ email, role }),
         });
     },
+
+    async leaveDeck(deckId: number): Promise<void> {
+    await authorizedFetch(`${API_URL}/decks/${deckId}/leave`, {
+        method: "DELETE",
+    });
+}
+
 };
 

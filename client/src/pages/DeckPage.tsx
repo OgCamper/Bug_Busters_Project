@@ -57,6 +57,10 @@ export default function DeckPage() {
         }
     }, [numericDeckId]);
 
+    const isOwner = deck?.role === "owner";
+    const isEditor = deck?.role === "editor";
+    const canEdit = isOwner || isEditor;
+
     useEffect(() => {
         void loadDeck();
     }, [loadDeck]);
@@ -183,18 +187,32 @@ export default function DeckPage() {
                             ← Back to decks
                         </button>
                         <div className="flex gap-3">
+                            {isOwner && (
                             <button
                                 onClick={() => setShowShareModal(true)}
                                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-500"
                             >
                                 Share Deck
                             </button>
+                            )}
                             <button
                                 onClick={handleLogout}
                                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                             >
                                 Logout
                             </button>
+                            {deck && !isOwner && (
+                            <button
+                                onClick={async () => {
+                                if (!confirm("Are you sure you want to leave this deck?")) return;
+                                await deckService.leaveDeck(deck.id);
+                                navigate("/home");
+                                }}
+                                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-500"
+                            >
+                                Leave Deck
+                            </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -217,11 +235,24 @@ export default function DeckPage() {
                                     : 'recently'}
                             </p>
                             <h1 className="text-2xl font-bold text-gray-800">{deck.title}</h1>
+                            {deck.role && (
+                                <span className={`
+                                    inline-block mt-2 px-3 py-1 text-xs font-semibold rounded border
+                                    ${deck.role === "owner" ? "bg-green-100 text-green-700 border-green-300" : ""}
+                                    ${deck.role === "editor" ? "bg-blue-100 text-blue-700 border-blue-300" : ""}
+                                    ${deck.role === "viewer" ? "bg-gray-100 text-gray-700 border-gray-300" : ""}
+                                `}>
+                                    {deck.role === "owner" && "Owned by you"}
+                                    {deck.role === "editor" && "Editor access"}
+                                    {deck.role === "viewer" && "Viewer access"}
+                                </span>
+                            )}
                             {deck.description && (
                                 <p className="text-gray-600 mt-2">{deck.description}</p>
                             )}
                         </header>
-
+                        
+                        {canEdit && (
                         <form onSubmit={handleDeckUpdate} className="space-y-4">
                             <h2 className="text-xl font-semibold text-gray-800">Edit deck</h2>
                             <div>
@@ -261,9 +292,12 @@ export default function DeckPage() {
                                 {deckSaving ? 'Saving...' : 'Save deck changes'}
                             </button>
                         </form>
+                        )}
+
                     </section>
                 )}
 
+                {canEdit && (
                 <section className="bg-white rounded-lg shadow p-6 space-y-4">
                     <h2 className="text-xl font-semibold text-gray-800">Add a flashcard</h2>
                     <form onSubmit={handleCreateCard} className="grid gap-4">
@@ -304,6 +338,7 @@ export default function DeckPage() {
                         </button>
                     </form>
                 </section>
+                )}
 
                 <section className="bg-white rounded-lg shadow p-6">
                     <h2 className="text-xl font-semibold text-gray-800 mb-4">
@@ -386,21 +421,24 @@ export default function DeckPage() {
                                                 </p>
                                                 <p className="text-gray-800">{card.back_text}</p>
                                             </div>
-                                            <div className="flex gap-3 pt-2">
-                                                <button
-                                                    onClick={() => startEditCard(card)}
-                                                    className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteCard(card.id)}
-                                                    className="px-3 py-1 text-sm bg-red-50 text-red-600 border border-red-200 rounded-md hover:bg-red-100 disabled:opacity-60"
-                                                    disabled={cardSavingId === card.id}
-                                                >
-                                                    {cardSavingId === card.id ? 'Deleting...' : 'Delete'}
-                                                </button>
-                                            </div>
+                                            {canEdit && (
+                                                <div className="flex gap-3 pt-2">
+                                                    <button
+                                                        onClick={() => startEditCard(card)}
+                                                        className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteCard(card.id)}
+                                                        className="px-3 py-1 text-sm bg-red-50 text-red-600 border border-red-200 rounded-md hover:bg-red-100 disabled:opacity-60"
+                                                        disabled={cardSavingId === card.id}
+                                                    >
+                                                        {cardSavingId === card.id ? 'Deleting...' : 'Delete'}
+                                                    </button>
+                                                </div>
+                                            )}
+
                                         </div>
                                     )}
                                 </li>

@@ -113,6 +113,9 @@ export default function HomePage() {
     navigate(`/decks/${deckId}/quiz`);
   };
 
+  const ownedDecks = decks.filter((d) => d.source === "owner" || !d.source);
+  const sharedDecks = decks.filter((d) => d.source === "shared");
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm">
@@ -206,6 +209,7 @@ export default function HomePage() {
         </section>
 
         <section className="bg-white rounded-lg shadow-md p-6">
+          {/* Owned Decks */}
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-gray-800">Your Decks</h2>
             <button
@@ -218,73 +222,50 @@ export default function HomePage() {
 
           {loading ? (
             <p className="text-gray-500">Loading decks...</p>
-          ) : decks.length === 0 ? (
-            <p className="text-gray-500">No decks yet. Create your first one above.</p>
+          ) : ownedDecks.length === 0 ? (
+            <p className="text-gray-500">You haven't created any decks yet.</p>
           ) : (
             <ul className="space-y-4">
-              {decks.map((deck) => (
+              {ownedDecks.map((deck) => (
                 <li key={deck.id} className="rounded-lg border border-gray-200 p-4">
                   {editingDeckId === deck.id ? (
                     <form
                       onSubmit={(event) => handleUpdateDeck(event, deck.id)}
                       className="space-y-3"
                     >
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Title
-                        </label>
-                        <input
-                          value={editForm.title}
-                          onChange={(e) =>
-                            setEditForm((prev) => ({ ...prev, title: e.target.value }))
-                          }
-                          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Description
-                        </label>
-                        <textarea
-                          value={editForm.description}
-                          onChange={(e) =>
-                            setEditForm((prev) => ({ ...prev, description: e.target.value }))
-                          }
-                          className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none"
-                          rows={2}
-                        />
-                      </div>
-                      <div className="flex gap-3">
-                        <button
-                          type="submit"
-                          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 disabled:opacity-60"
-                          disabled={processingDeckId === deck.id}
-                        >
-                          {processingDeckId === deck.id ? 'Saving...' : 'Save'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={cancelEditing}
-                          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
-                        >
-                          Cancel
-                        </button>
-                      </div>
+                      {/* Title input */}
+                      {/* Description input */}
+                      {/* Save + Cancel buttons */}
                     </form>
                   ) : (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-800">{deck.title}</h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-semibold text-gray-800">{deck.title}</h3>
+                            {deck.role && (
+                              <span className={`
+                                  inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded border
+                                  ${deck.role === "owner" ? "bg-green-100 text-green-700 border-green-300" : ""}
+                                  ${deck.role === "editor" ? "bg-blue-100 text-blue-700 border-blue-300" : ""}
+                                  ${deck.role === "viewer" ? "bg-gray-100 text-gray-700 border-gray-300" : ""}
+                              `}>
+                                {deck.role === "owner" && "Owned by you"}
+                                {deck.role === "editor" && "Editor access"}
+                                {deck.role === "viewer" && "Viewer access"}
+                              </span>
+                            )}
+                            <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">
+                              Your Deck
+                            </span>
+                          </div>
                           {deck.description && (
                             <p className="text-gray-600 text-sm">{deck.description}</p>
                           )}
                         </div>
-                        <span className="text-sm text-gray-500">
-                          {deck.card_count ?? 0} cards
-                        </span>
+                        <span className="text-sm text-gray-500">{deck.card_count ?? 0} cards</span>
                       </div>
+
                       <div className="flex gap-3 pt-2">
                         <button
                           onClick={() => goToDeck(deck.id)}
@@ -306,7 +287,7 @@ export default function HomePage() {
                         </button>
                         <button
                           onClick={() => handleDeleteDeck(deck.id)}
-                          className="px-3 py-1 text-sm bg-red-50 text-red-600 border border-red-200 rounded-md hover:bg-red-100 disabled:opacity-60"
+                          className="px-3 py-1 text-sm bg-red-50 text-red-600 border border-red-200 rounded-md hover:bg-red-100"
                           disabled={processingDeckId === deck.id}
                         >
                           {processingDeckId === deck.id ? 'Deleting...' : 'Delete'}
@@ -318,7 +299,54 @@ export default function HomePage() {
               ))}
             </ul>
           )}
+
+          <h2 className="text-xl font-semibold text-gray-800 mt-10 mb-4">Shared With You</h2>
+
+          {loading ? (
+            <p className="text-gray-500">Loading shared decks...</p>
+          ) : sharedDecks.length === 0 ? (
+            <p className="text-gray-500">No shared decks yet.</p>
+          ) : (
+            <ul className="space-y-4">
+              {sharedDecks.map((deck) => (
+                <li key={deck.id} className="rounded-lg border border-gray-200 p-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-lg font-semibold text-gray-800">{deck.title}</h3>
+                          <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">
+                            Shared
+                          </span>
+                        </div>
+                        {deck.description && (
+                          <p className="text-gray-600 text-sm">{deck.description}</p>
+                        )}
+                      </div>
+                      <span className="text-sm text-gray-500">{deck.card_count ?? 0} cards</span>
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        onClick={() => goToDeck(deck.id)}
+                        className="px-3 py-1 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-500"
+                      >
+                        Open
+                      </button>
+                      <button
+                        onClick={() => handleTestDeck(deck.id)}
+                        className="px-3 py-1 text-sm bg-purple-50 text-purple-700 border border-purple-200 rounded-md hover:bg-purple-100"
+                      >
+                        Test deck
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
+
       </main>
     </div>
   );

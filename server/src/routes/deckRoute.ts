@@ -14,13 +14,34 @@ router.get('/', authenticate, async (req: AuthenticatedRequest, res) => {
             return res.status(401).json({ message: 'Unauthorized' });
         }
 
+        // Load decks owned by user + decks shared with user
         const [rows] = await db.query<RowDataPacket[]>(
-            `SELECT d.deck_id, d.title, d.description, d.created_at,
-                    (SELECT COUNT(*) FROM Flashcard f WHERE f.deck_id = d.deck_id) AS card_count
-             FROM Deck d
-             WHERE d.user_id = ?
-             ORDER BY d.created_at DESC`,
-            [userId]
+            `
+            SELECT 
+                d.deck_id,
+                d.title,
+                d.description,
+                d.created_at,
+                (SELECT COUNT(*) FROM Flashcard f WHERE f.deck_id = d.deck_id) AS card_count,
+                'owner' AS source
+            FROM Deck d
+            WHERE d.user_id = ?
+
+            UNION
+
+            SELECT 
+                d.deck_id,
+                d.title,
+                d.description,
+                d.created_at,
+                (SELECT COUNT(*) FROM Flashcard f WHERE f.deck_id = d.deck_id) AS card_count,
+                'shared' AS source
+            FROM Collaboration c
+            JOIN Deck d ON c.deck_id = d.deck_id
+            WHERE c.user_id = ?
+            ORDER BY created_at DESC
+            `,
+            [userId, userId]
         );
 
         const decks = rows.map((deck) => ({
@@ -29,9 +50,11 @@ router.get('/', authenticate, async (req: AuthenticatedRequest, res) => {
             description: deck.description as string | null,
             created_at: deck.created_at as Date,
             card_count: Number(deck.card_count ?? 0),
+            source: deck.source as string
         }));
 
         return res.status(200).json({ decks });
+
     } catch (err) {
         console.error('Error fetching Decks:', err);
         return res.status(500).json({ message: 'Internal Server Error' });
@@ -89,10 +112,21 @@ router.get('/:deckId', authenticate, async (req: AuthenticatedRequest, res) => {
         }
 
         const [deckRows] = await db.query<RowDataPacket[]>(
-            `SELECT deck_id, title, description, created_at
-             FROM Deck
-             WHERE deck_id = ? AND user_id = ?`,
-            [deckId, userId]
+            `
+            SELECT 
+                d.deck_id, 
+                d.title, 
+                d.description, 
+                d.created_at, 
+                d.user_id AS owner_id,
+                c.role AS shared_role
+            FROM Deck d
+            LEFT JOIN Collaboration c 
+                ON c.deck_id = d.deck_id AND c.user_id = ?
+            WHERE d.deck_id = ?
+                AND (d.user_id = ? OR c.user_id IS NOT NULL)
+            `,
+            [userId, deckId, userId]
         );
 
         const deck = deckRows[0];
@@ -119,12 +153,14 @@ router.get('/:deckId', authenticate, async (req: AuthenticatedRequest, res) => {
 
         return res.status(200).json({
             deck: {
-                id: deck.deck_id as number,
-                title: deck.title as string,
-                description: deck.description as string | null,
-                created_at: deck.created_at as Date,
+                id: deck.deck_id,
+                title: deck.title,
+                description: deck.description,
+                created_at: deck.created_at,
+                owner_id: deck.owner_id,
+                role: deck.shared_role ?? "owner",
             },
-            cards,
+            cards
         });
     } catch (err) {
         console.error('Error fetching Deck detail:', err);
@@ -234,7 +270,7 @@ router.post("/:deckId/share", async (req, res) => {
   try {
     // returns [rows, fields]
     const [rows] = await db.query(
-      "SELECT user_id FROM users WHERE email = ?",
+      "SELECT user_id FROM User WHERE email = ?",
       [email]
     );
 
@@ -246,7 +282,7 @@ router.post("/:deckId/share", async (req, res) => {
 
     // Insert collaboration row
     await db.query(
-      `INSERT INTO collaboration (deck_id, user_id, role)
+      `INSERT INTO Collaboration (deck_id, user_id, role)
        VALUES (?, ?, ?)`,
       [deckId, sharedUserId, role]
     );
@@ -255,6 +291,24 @@ router.post("/:deckId/share", async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Error sharing deck" });
+  }
+});
+
+// Leave a shared deck (remove collaboration)
+router.delete("/:deckId/leave", authenticate, async (req: AuthenticatedRequest, res) => {
+  const userId = req.user?.id;
+  const { deckId } = req.params;
+
+  try {
+    const [result] = await db.query(
+      `DELETE FROM Collaboration WHERE deck_id = ? AND user_id = ?`,
+      [deckId, userId]
+    );
+
+    return res.json({ message: "Left deck successfully" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Failed to leave deck" });
   }
 });
 
