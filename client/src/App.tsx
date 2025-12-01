@@ -6,6 +6,7 @@ import SignupPage from './pages/SignUpPage';
 import HomePage from './pages/HomePage';
 import DeckPage from './pages/DeckPage';
 import DeckQuizPage from './pages/DeckQuizPage';
+import SpacedQuizPage from './pages/SpacedQuizPage';
 import "./App.css";
 
 function App() {
@@ -36,6 +37,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <DeckQuizPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/decks/:deckId/quiz/spaced"
+            element={
+              <ProtectedRoute>
+                <SpacedQuizPage />
               </ProtectedRoute>
             }
           />

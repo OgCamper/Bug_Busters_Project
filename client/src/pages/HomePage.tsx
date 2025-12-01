@@ -113,6 +113,11 @@ export default function HomePage() {
     navigate(`/decks/${deckId}/quiz`);
   };
 
+  // Spaced repetition quiz navigation
+  const handleSpacedQuiz = (deckId: number) => {
+    navigate(`/decks/${deckId}/quiz/spaced`);
+  };
+
   const ownedDecks = decks.filter((d) => d.source === "owner" || !d.source);
   const sharedDecks = decks.filter((d) => d.source === "shared");
   
@@ -280,6 +285,12 @@ export default function HomePage() {
                           Test deck
                         </button>
                         <button
+                          onClick={() => handleSpacedQuiz(deck.id)}
+                          className="px-3 py-1 text-sm bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-md hover:bg-yellow-100"
+                        >
+                          Spaced quiz
+                        </button>
+                        <button
                           onClick={() => startEditing(deck)}
                           className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
                         >
@@ -338,6 +349,12 @@ export default function HomePage() {
                         className="px-3 py-1 text-sm bg-purple-50 text-purple-700 border border-purple-200 rounded-md hover:bg-purple-100"
                       >
                         Test deck
+                      </button>
+                      <button
+                        onClick={() => handleSpacedQuiz(deck.id)}
+                        className="px-3 py-1 text-sm bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-md hover:bg-yellow-100"
+                      >
+                        Spaced quiz
                       </button>
                     </div>
                   </div>
