@@ -3,6 +3,8 @@ import cors from 'cors';
 import authRouter from './routes/authRoute.js';
 import deckRouter from './routes/deckRoute.js';
 import cardRouter from './routes/cardRoute.js';
+import statsRouter from './routes/stats.js';  // Add this line
+import studySessionRouter from './routes/studySession.js'; // Optional: add this line too
 
 const app = express();
 
@@ -13,6 +15,10 @@ app.use(express.json());
 app.use('/api/auth', authRouter);
 app.use('/api/decks', deckRouter);
 app.use('/api/cards', cardRouter);
+app.use('/api/stats', statsRouter);             // Register here
+app.use('/api/studySession', studySessionRouter);    // Register here (if added)
+
+
 
 // health check
 app.get('/api/health', (req, res) => {

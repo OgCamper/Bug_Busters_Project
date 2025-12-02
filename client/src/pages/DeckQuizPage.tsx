@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { deckService, type Card, type DeckSummary } from '../services/DeckService';
 import { useAuth } from '../contexts/AuthContext';
+import axios from "axios"; // NEW import
 
 type FeedbackState = 'correct' | 'incorrect' | null;
 
@@ -72,11 +73,37 @@ export default function DeckQuizPage() {
         setFeedback(isCorrect ? 'correct' : 'incorrect');
     };
 
+    // NEW FUNCTION: Record study session after quiz completes
+    const recordStudySession = async () => {
+        try {
+            await axios.post(
+                'http://localhost:3000/api/studySession', // Adjust if API_BASE is defined
+                {
+                    deckId: numericDeckId,
+                    correct: score,
+                    incorrect: cards.length - score,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+            console.log('Study session recorded successfully');
+        } catch (err) {
+            console.error('Failed to record study session:', err);
+        }
+    };
+
+    // UPDATED: Record session when quiz is finished
+
     const handleNext = () => {
         if (!feedback) return;
 
         if (currentIndex + 1 >= cards.length) {
             setCompleted(true);
+            void recordStudySession(); // New line — record quiz result when finished
         } else {
             setCurrentIndex((prev) => prev + 1);
         }
