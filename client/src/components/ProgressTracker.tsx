@@ -67,7 +67,7 @@ export default function ProgressTracker() {
 
   // compute total cards reviewed
   const totalReviewed = stats.progress.reduce(
-    (sum, d) => sum + (d.correct + d.incorrect),
+    (sum, d) => sum + (Number(d.correct) + Number(d.incorrect)),
     0
   );
 
@@ -111,23 +111,34 @@ export default function ProgressTracker() {
           {stats.streak === 1 ? "day" : "days"}
         </p>
       </div>
-
-      {/* Reviewed cards */}
+      {/* Total reviewed summary */}
       <p className="text-sm text-gray-600 text-center">
         Total reviewed this period:{" "}
-        <span className="font-semibold">{totalReviewed}</span>
+        <span className="font-semibold text-gray-800">{totalReviewed}</span>{" "}
+        cards
       </p>
 
-      {/* Optional: small chart summary */}
-      <div className="mt-6 space-y-1 text-xs text-gray-600">
-        {stats.progress.map((p) => (
-          <div key={p.date} className="flex justify-between">
-            <span>{new Date(p.date).toLocaleDateString()}</span>
-            <span>
-              ✅ {p.correct} / ❌ {p.incorrect}
-            </span>
-          </div>
-        ))}
+      {/* ✅❌ per-day breakdown */}
+      <div className="mt-4 border-t pt-3 space-y-1 text-xs text-gray-600">
+        {stats.progress.length > 0 ? (
+          stats.progress.map((p) => {
+            const correct = Number(p.correct);
+            const incorrect = Number(p.incorrect);
+            return (
+              <div key={p.date} className="flex justify-between">
+                <span>{new Date(p.date).toLocaleDateString()}</span>
+                <span>
+                  ✅ {correct} &nbsp;/&nbsp; ❌ {incorrect}{" "}
+                  <span className="text-gray-400">
+                    ({correct + incorrect} total)
+                  </span>
+                </span>
+              </div>
+            );
+          })
+        ) : (
+          <p className="text-center text-gray-500">No review data yet.</p>
+        )}
       </div>
     </div>
   );
