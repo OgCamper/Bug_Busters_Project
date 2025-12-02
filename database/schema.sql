@@ -83,3 +83,18 @@ CREATE TABLE IF NOT EXISTS Analytics (
     last_active DATETIME,
     FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
 );
+-- =========================================
+-- Table: StudySession
+-- Tracks each user's study or quiz activity over time
+-- =========================================
+
+CREATE TABLE IF NOT EXISTS StudySession (
+    session_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    deck_id INT NOT NULL,
+    correct INT DEFAULT 0,
+    incorrect INT DEFAULT 0,
+    date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (deck_id) REFERENCES Deck(deck_id) ON DELETE CASCADE
+);

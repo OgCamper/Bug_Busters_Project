@@ -127,6 +127,15 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <h1 className="text-xl font-bold text-gray-800">Bug Busters Study App</h1>
+             {/* New Stats Button */}
+             <button
+              onClick={() => navigate('/stats')}
+              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-500"
+            >
+              View Progress
+            </button>
+
+             {/* Existing Logout Button */}
             <button
               onClick={handleLogout}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
