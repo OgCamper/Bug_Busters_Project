@@ -8,7 +8,6 @@ const router = express.Router();
 
 /**
  * GET /api/stats?range=7d|30d|all
- * Returns study accuracy, streak, and daily progress data.
  */
 router.get("/", authenticate, async (req: AuthenticatedRequest, res) => {
   try {
@@ -17,7 +16,7 @@ router.get("/", authenticate, async (req: AuthenticatedRequest, res) => {
 
     const range = req.query.range ?? "7d";
 
-    // Add a SQL date filter for 7-day or 30-day range
+    // Apply date filter
     let dateFilter = "";
     if (range === "7d") {
       dateFilter = "AND DATE(date) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
@@ -25,7 +24,7 @@ router.get("/", authenticate, async (req: AuthenticatedRequest, res) => {
       dateFilter = "AND DATE(date) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
     }
 
-    // Query daily quiz/study stats for this user
+    // Query per-day results
     const [rows] = await db.query<RowDataPacket[]>(
       `
       SELECT 
@@ -40,40 +39,45 @@ router.get("/", authenticate, async (req: AuthenticatedRequest, res) => {
       [userId]
     );
 
-    // Compute total accuracy
-    const totalCorrect = rows.reduce((sum, r) => sum + (r.correct || 0), 0);
-    const totalIncorrect = rows.reduce((sum, r) => sum + (r.incorrect || 0), 0);
+    // Convert and calculate totals
+    const totalCorrect = rows.reduce(
+      (sum, r) => sum + Number(r.correct || 0),
+      0
+    );
+    const totalIncorrect = rows.reduce(
+      (sum, r) => sum + Number(r.incorrect || 0),
+      0
+    );
     const total = totalCorrect + totalIncorrect;
-    const accuracy = total > 0 ? Math.round((totalCorrect / total) * 100) : 0;
+    const accuracy =
+      total > 0 ? Math.round((totalCorrect / total) * 100) : 0;
 
-    // Compute streak (consecutive active days)
+    // Calculate streak (consecutive active days)
     let streak = 0;
-    let currentStreak = 0;
-    let lastDate: string | null = null;
+    let current = 0;
+    let last: string | null = null;
 
     rows.forEach((r) => {
-      const day = new Date(r.date).toISOString().split("T")[0];
-      if (lastDate) {
-        const diffDays =
-          (new Date(day).getTime() - new Date(lastDate).getTime()) /
-          (1000 * 60 * 60 * 24);
-        currentStreak = diffDays === 1 ? currentStreak + 1 : 1;
-      } else {
-        currentStreak = 1;
-      }
-      lastDate = day;
-      streak = Math.max(streak, currentStreak);
+      const d = new Date(r.date).toISOString().split("T")[0];
+      if (last) {
+        const diff =
+          (new Date(d).getTime() - new Date(last).getTime()) /
+          (1000 * 3600 * 24);
+        current = diff === 1 ? current + 1 : 1;
+      } else current = 1;
+      last = d;
+      if (current > streak) streak = current;
     });
 
-    // Respond with data
+    // Respond with parsed numeric data
     res.json({
       range,
       accuracy,
       streak,
       progress: rows.map((r) => ({
         date: r.date,
-        correct: r.correct || 0,
-        incorrect: r.incorrect || 0,
+        correct: Number(r.correct || 0),
+        incorrect: Number(r.incorrect || 0),
       })),
     });
   } catch (err) {
